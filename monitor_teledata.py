@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-# download the page from http://192.168.10.1/ which redirects to main.cgi?mac_esn=0a003ed7cdf5
-# parse the page
-# update database. 
-# if down make a note to send uptime info next time it is up
-# if up, and there is a note to send a downtime email send
-
-
 import re, urllib                      
 from BeautifulSoup import BeautifulSoup as bs
 from BeautifulSoup import NavigableString as ns
@@ -15,8 +8,8 @@ class Scraping(object):
     def parse(self, url, parser=None):
         if parser is None:
             parser = self.__get
-        driver = self._a
-        return driver(url, parser)
+        reader = self._a
+        return reader(url, parser)
 
     def p(self, content, parser):
         soup = bs(self.__bs_preprocess(content))
@@ -49,15 +42,42 @@ class Scraping(object):
         html = re.sub('>[\s]+', '>', html) # remove whitespaces after closing tags
         return html 
 
-
+# download the page from http://192.168.10.1/ which redirects to main.cgi?mac_esn=0a003ed7cdf5
+# parse the page
+# update database. 
+# if down make a note to send uptime info next time it is up
+# if up, and there is a note to send a downtime email send
 def main():
     url = 'http://192.168.10.1/main.cgi?mac_esn=0a003ed7cdf5'
     sxp = Scraping()
-    parser = None
-    # //*[@id="RegisteredAP"]
+    print sxp.parse(url, parser)
     
-    content = sxp.parse(url, parser)
-    print content.find('span', id='RegisteredAP').string
-        
+def parser(soup):
+    return (soup.find('span', id='RegisteredAP').string,
+            parse_device_info(soup),
+            parse_site_info(soup),
+            parse_sm_stats(soup))
+
+def parse_device_info(soup):
+    soup = soup.find('div', id='SectionDeviceInfo')
+    soup = soup.table.tbody.contents
+    xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
+    return xs
+
+def parse_site_info(soup):
+    soup = soup.find('div', id='SectionSiteInfoStats')
+    soup = soup.table.tbody.contents
+    xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
+    return xs
+
+def parse_sm_stats(soup):
+    soup = soup.find('div', id='SectionSubscriberModemStats')
+    soup = soup.table.tbody.contents
+    xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
+    return xs
+
 if __name__ == "__main__":
     main()
+
+
+    
