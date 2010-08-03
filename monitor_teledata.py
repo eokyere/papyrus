@@ -59,23 +59,20 @@ def parser(soup):
             parse_sm_stats(soup))
 
 def parse_device_info(soup):
-    soup = soup.find('div', id='SectionDeviceInfo')
-    soup = soup.table.tbody.contents
-    xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
-    return xs
+    return parse_section(soup, 'SectionDeviceInfo')
 
 def parse_site_info(soup):
-    soup = soup.find('div', id='SectionSiteInfoStats')
-    soup = soup.table.tbody.contents
-    xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
-    return xs
+    return parse_section(soup, 'SectionSiteInfoStats')
 
 def parse_sm_stats(soup):
-    soup = soup.find('div', id='SectionSubscriberModemStats')
+    return parse_section(soup, 'SectionSubscriberModemStats')
+
+def parse_section(soup, id):
+    soup = soup.find('div', id=id)
     soup = soup.table.tbody.contents
     xs = [(x.contents[0].string, x.contents[1].span.string) for x in soup]   
-    return xs
-
+    return xs  
+    
 if __name__ == "__main__":
     main()
 
